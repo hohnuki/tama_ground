@@ -91,8 +91,8 @@ class GroundNotifier(Scraper) :
           first_count = 0
 
         for (ava,col) in zip(first_ava,first_col):
-          if (first_count >= 4 and first_count <= 26 and str(ava) == "空き"):
-            message += str(self.park_name(j)) + date_first + "  " + self.convert_count_to_time(first_count) + "空きあり" + "\n"
+          if (first_count >= 4 and first_count <= 26 and str(ava) == "空き" and j != 0 and j != 1):
+            message += str(self.park_name(j)) + date_first + "  " + self.convert_count_to_time(first_count) + " 空きあり" + "\n"
           first_count += int(col)
 
       self.click('#DailyAkiListCtrl_NextDayImgBtn')
@@ -116,11 +116,60 @@ class GroundNotifier(Scraper) :
           second_count = 0
 
         for (ava,col) in zip(second_ava,second_col):
-          if (second_count >= 4 and second_count <= 26 and str(ava) == "空き"):
-            message += str(self.park_name(j)) + date_second + "  " + self.convert_count_to_time(second_count) + "空きあり" + "\n"
+          if (second_count >= 4 and second_count <= 26 and str(ava) == "空き" and j != 0 and j != 1):
+            message += str(self.park_name(j)) + date_second + "  " + self.convert_count_to_time(second_count) + " 空きあり" + "\n"
           second_count += int(col)
-      print(message)
 
+      self.click('#DailyAkiListCtrl_NextDayImgBtn')
+      time.sleep(2)
+      html_main_third = self.driver.page_source
+      soup_third = BeautifulSoup(html_main_third, 'lxml')
+      table_date_third = soup_third.find(class_='label-datechange-currentdate calendar-selected-date')
+      date_third = table_date_third.get_text()
+
+      for j in range(5):
+        table_third = soup_third.find_all(class_='calendar-datarow-day')[int(j)]
+        third_catch = table_third.find_all('td')
+        third_col = []
+        third_ava = []
+        third_count = 0
+
+        for i in range(1,len(third_catch) ):
+          third_catch = table_third.find_all('td')[int(i)]
+          third_col.append(int(third_catch["colspan"]))
+          third_ava.append(third_catch.get_text())
+          third_count = 0
+
+        for (ava,col) in zip(third_ava,third_col):
+          if (third_count >= 4 and third_count <= 26 and str(ava) == "空き" and j != 0 and j != 1):
+            message += str(self.park_name(j)) + date_third + "  " + self.convert_count_to_time(third_count) + " 空きあり" + "\n"
+          third_count += int(col)
+
+      self.click('#DailyAkiListCtrl_NextDayImgBtn')
+      time.sleep(2)
+      html_main_four = self.driver.page_source
+      soup_four = BeautifulSoup(html_main_four, 'lxml')
+      table_date_four = soup_four.find(class_='label-datechange-currentdate calendar-selected-date')
+      date_four = table_date_four.get_text()
+
+      for j in range(5):
+        table_four = soup_four.find_all(class_='calendar-datarow-day')[int(j)]
+        four_catch = table_four.find_all('td')
+        four_col = []
+        four_ava = []
+        four_count = 0
+
+        for i in range(1,len(four_catch) ):
+          four_catch = table_four.find_all('td')[int(i)]
+          four_col.append(int(four_catch["colspan"]))
+          four_ava.append(four_catch.get_text())
+          four_count = 0
+
+        for (ava,col) in zip(four_ava, four_col):
+          if (four_count >= 4 and four_count <= 26 and str(ava) == "空き" and j != 0 and j != 1):
+            message += str(self.park_name(j)) + date_four + "  " + self.convert_count_to_time(four_count) + " 空きあり" + "\n"
+          four_count += int(col)
+      print(message)
 
       # ブラウザを終了する
       self.driver.quit()
