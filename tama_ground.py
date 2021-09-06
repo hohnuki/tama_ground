@@ -72,12 +72,7 @@ class GroundNotifier(Scraper) :
           count += int(c)
       return (message)
 
-    def execute_main(self) :
-      # TO_ADDRESS_1 = 'tk.cw.milds@gmail.com'
-      TO_ADDRESS_2 = 'ohnukihiroki8585@yahoo.co.jp'
-      SUBJECT = "多摩市のグラウンドに空きがあります"
-      message = ""
-
+    def connect_tama(self) :
       # 多摩市公共施設予約・案内システムのサイトを開く
       self.driver.get('https://www.google.com/search?q=%E5%A4%9A%E6%91%A9%E5%B8%82%E6%96%BD%E8%A8%AD%E4%BA%88%E7%B4%84%E3%83%88%E3%83%83%E3%83%97%E3%83%9A%E3%83%BC%E3%82%B8&rlz=1C5CHFA_enJP952JP953&sxsrf=ALeKk03nLyNGQ3GPujy3USUumboZdplVRg%3A1626688716370&ei=zEz1YMmFFvyT0PEP3926wA4&oq=%E5%A4%9A%E6%91%A9%E5%B8%82%E6%96%BD%E8%A8%AD%E4%BA%88%E7%B4%84t&gs_lcp=Cgdnd3Mtd2l6EAMYADIGCAAQBBAlOgcIIxCwAxAnOgUIABDNAkoECEEYAVDXLFiOMmCcO2gCcAB4AIABaIgBrgKSAQMxLjKYAQCgAQGqAQdnd3Mtd2l6yAEBwAEB&sclient=gws-wiz')
       self.click('#rso > div:nth-child(1) > div > div > div.yuRUbf > a > h3')
@@ -96,15 +91,22 @@ class GroundNotifier(Scraper) :
       self.click('#WeeklyAkiListCtrl_DayTypeCheckBoxList_6')
       self.click('#WeeklyAkiListCtrl_DayTypeCheckBoxList_7')
       self.click('#WeeklyAkiListCtrl_FilteringButton')
-      self.click('#ykr31101 > div.panel-layout-aki.horizontal-block > div:nth-child(1) > table.table-calendar > tbody > tr:nth-child(1) > th:nth-child(2) > a')
-      # self.click('#ykr31101 > div.panel-layout-aki.horizontal-block > div:nth-child(1) > table.table-calendar > tbody > tr:nth-child(1) > th:nth-child(3) > a')
-      time.sleep(1)
-      html = self.driver.page_source
-      message += self.make_message(html)
 
+    def execute_main(self) :
+      # TO_ADDRESS_1 = 'tk.cw.milds@gmail.com'
+      # TO_ADDRESS_2 = 'ohnukihiroki8585@yahoo.co.jp'
+      # SUBJECT = "多摩市のグラウンドに空きがあります"
+
+      self.connect_tama()
+
+      message = ""
       count = 0
-      while (count < 3):
-        self.click('#DailyAkiListCtrl_NextDayImgBtn')
+      while (count < 4):
+        if count == 0:
+          self.click('#ykr31101 > div.panel-layout-aki.horizontal-block > div:nth-child(1) > table.table-calendar > tbody > tr:nth-child(1) > th:nth-child(2) > a')
+          # self.click('#ykr31101 > div.panel-layout-aki.horizontal-block > div:nth-child(1) > table.table-calendar > tbody > tr:nth-child(1) > th:nth-child(3) > a')
+        else :
+          self.click('#DailyAkiListCtrl_NextDayImgBtn')
         time.sleep(1)
         html = self.driver.page_source
         message += self.make_message(html)
