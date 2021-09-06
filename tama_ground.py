@@ -30,25 +30,28 @@ class GroundNotifier(Scraper) :
       return (ground_time)
 
     def park_name(self, nb) :
-      ground_name = ""
+      name = ""
       if (nb == 0):
-        ground_name = "諏訪南公園"
+        name = "諏訪南公園"
       if (nb == 1):
-        ground_name = "一本杉公園"
+        name = "一本杉公園"
       if (nb == 2):
-        ground_name = "貝取南公園"
+        name = "貝取南公園"
       if (nb == 3):
-        ground_name = "関戸公園"
+        name = "関戸公園"
       if (nb == 4):
-        ground_name = "諏訪北公園"
-      return (ground_name)
+        name = "諏訪北公園"
+      return (name)
+
+    def get_date(self, soup) :
+      table_date = soup.find(class_='label-datechange-currentdate calendar-selected-date')
+      date = table_date.get_text().split('年')
+      return (date[1])
 
     def make_message(self, html_main) :
-      soup = BeautifulSoup(html_main, 'lxml')
-      table_date = soup.find(class_='label-datechange-currentdate calendar-selected-date')
-      date = table_date.get_text()
-
       message = ""
+      soup = BeautifulSoup(html_main, 'lxml')
+
       for j in range(5):
         table = soup.find_all(class_='calendar-datarow-day')[int(j)]
         catch = table.find_all('td')
@@ -63,8 +66,9 @@ class GroundNotifier(Scraper) :
           count = 0
 
         for (a,c) in zip(ava,col):
-          if (count >= 4 and count <= 26 and str(a) == "空き" and j != 0 and j != 1):
-            message += str(self.park_name(j)) + date + "  " + self.convert_count_to_time(count) + " 空きあり" + "\n"
+          #and j != 0 and j != 1
+          if (count >= 4 and count <= 26 and str(a) == "空き"):
+            message += str(self.park_name(j)) + "\n" + "   " + self.get_date(soup) + "  " + self.convert_count_to_time(count) + " 空きあり" + "\n\n"
           count += int(c)
       return (message)
 
@@ -92,29 +96,23 @@ class GroundNotifier(Scraper) :
       self.click('#WeeklyAkiListCtrl_DayTypeCheckBoxList_6')
       self.click('#WeeklyAkiListCtrl_DayTypeCheckBoxList_7')
       self.click('#WeeklyAkiListCtrl_FilteringButton')
-      # self.click('#ykr31101 > div.panel-layout-aki.horizontal-block > div:nth-child(1) > table.table-calendar > tbody > tr:nth-child(1) > th:nth-child(2) > a')
-      self.click('#ykr31101 > div.panel-layout-aki.horizontal-block > div:nth-child(1) > table.table-calendar > tbody > tr:nth-child(1) > th:nth-child(3) > a')
+      self.click('#ykr31101 > div.panel-layout-aki.horizontal-block > div:nth-child(1) > table.table-calendar > tbody > tr:nth-child(1) > th:nth-child(2) > a')
+      # self.click('#ykr31101 > div.panel-layout-aki.horizontal-block > div:nth-child(1) > table.table-calendar > tbody > tr:nth-child(1) > th:nth-child(3) > a')
       time.sleep(1)
-      html_main_first = self.driver.page_source
-      message += self.make_message(html_main_first)
+      html = self.driver.page_source
+      message += self.make_message(html)
 
-      self.click('#DailyAkiListCtrl_NextDayImgBtn')
-      time.sleep(1)
-      html_main_second = self.driver.page_source
-      message += self.make_message(html_main_second)
-
-      self.click('#DailyAkiListCtrl_NextDayImgBtn')
-      time.sleep(1)
-      html_main_third = self.driver.page_source
-      message += self.make_message(html_main_third)
-
-      self.click('#DailyAkiListCtrl_NextDayImgBtn')
-      time.sleep(1)
-      html_main_four = self.driver.page_source
-      message += self.make_message(html_main_four)
+      count = 0
+      while (count < 3):
+        self.click('#DailyAkiListCtrl_NextDayImgBtn')
+        time.sleep(1)
+        html = self.driver.page_source
+        message += self.make_message(html)
+        count += 1
 
       # ブラウザを終了する
       self.driver.quit()
+      message += "https://www.task-asp.net/cu/ykr132241/app/ykr00000/ykr00001.aspx"
       print(message)
 
 if __name__ == '__main__':
