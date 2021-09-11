@@ -74,16 +74,22 @@ class GroundNotifier(Scraper) :
       return (message)
 
     def connect_tama(self) :
-      # 多摩市公共施設予約・案内システムのサイトを開く
+      # Geogleで多摩市施設予約トップページと検索
       self.driver.get('https://www.google.com/search?q=%E5%A4%9A%E6%91%A9%E5%B8%82%E6%96%BD%E8%A8%AD%E4%BA%88%E7%B4%84%E3%83%88%E3%83%83%E3%83%97%E3%83%9A%E3%83%BC%E3%82%B8&rlz=1C5CHFA_enJP952JP953&sxsrf=ALeKk03nLyNGQ3GPujy3USUumboZdplVRg%3A1626688716370&ei=zEz1YMmFFvyT0PEP3926wA4&oq=%E5%A4%9A%E6%91%A9%E5%B8%82%E6%96%BD%E8%A8%AD%E4%BA%88%E7%B4%84t&gs_lcp=Cgdnd3Mtd2l6EAMYADIGCAAQBBAlOgcIIxCwAxAnOgUIABDNAkoECEEYAVDXLFiOMmCcO2gCcAB4AIABaIgBrgKSAQMxLjKYAQCgAQGqAQdnd3Mtd2l6yAEBwAEB&sclient=gws-wiz')
+      # 多摩市施設予約トップページを開く
       self.click('#rso > div:nth-child(1) > div > div > div.yuRUbf > a > h3')
       # 詳細条件を指定するページに移動する
+      # 施設の案内と予約をクリック
       self.click('#ykr00001c_YoyakuImgButton')
+      # 利用目的で探すをクリック
       self.click('#ykr30001c_MokutekiImgButton')
       time.sleep(1)
+      # 利用目的一覧からスポーツを選択
       self.click('#ykr30010 > div.panel-layout-aki.horizontal-block > div:nth-child(1) > div.content-substance.WidthPr90 > table > tbody > tr:nth-child(2) > td.table-cell-item.WidthPr50 > a')
+      # スポーツの中から軟式野球を選択
       self.click('#ykr30011 > div.panel-layout-aki.horizontal-block > div:nth-child(1) > div.content-substance.WidthPr90 > table > tbody > tr:nth-child(16) > td.table-cell-item.WidthPr50 > a')
       time.sleep(1)
+      # 曜日を日曜日のみに絞り込む(月〜土、祝日をクリックする)
       self.click('#WeeklyAkiListCtrl_DayTypeCheckBoxList_1')
       self.click('#WeeklyAkiListCtrl_DayTypeCheckBoxList_2')
       self.click('#WeeklyAkiListCtrl_DayTypeCheckBoxList_3')
@@ -91,6 +97,7 @@ class GroundNotifier(Scraper) :
       self.click('#WeeklyAkiListCtrl_DayTypeCheckBoxList_5')
       self.click('#WeeklyAkiListCtrl_DayTypeCheckBoxList_6')
       self.click('#WeeklyAkiListCtrl_DayTypeCheckBoxList_7')
+      # 絞り込みをクリックする
       self.click('#WeeklyAkiListCtrl_FilteringButton')
 
     def check_ava(self, html) :
@@ -104,23 +111,26 @@ class GroundNotifier(Scraper) :
         return (0)
 
     def execute_main(self) :
-      # TO_ADDRESS_1 = 'tk.cw.milds@gmail.com'
-      # TO_ADDRESS_2 = 'ohnukihiroki8585@yahoo.co.jp'
-      # SUBJECT = "多摩市のグラウンドに空きがあります"
-
-      self.connect_tama()
-
+      TO_ADDRESS_1 = 'tk.cw.milds@gmail.com'
+      TO_ADDRESS_2 = 'ohnukihiroki8585@yahoo.co.jp'
+      SUBJECT = "多摩の球場に空きがあります"
       message = ""
       count = 0
+
+      # Geogle検索からグランドの日にち選択まで進める関数
+      self.connect_tama()
 
       html = self.driver.page_source
       while (count < 4):
         if count == 0:
+          # count == 1の時は全施設の1日表示の一番若い日付をクリックする。
+          # check_avaで全施設の1日表示の一番若い日付をクリックできるか判断する。
           if self.check_ava(html) == 1:
             self.click('#ykr31101 > div.panel-layout-aki.horizontal-block > div:nth-child(1) > table.table-calendar > tbody > tr:nth-child(1) > th:nth-child(3) > a')
           else:
             self.click('#ykr31101 > div.panel-layout-aki.horizontal-block > div:nth-child(1) > table.table-calendar > tbody > tr:nth-child(1) > th:nth-child(2) > a')
         else :
+          # count > 1の時は日付の横の翌日へをクリックする。
           self.click('#DailyAkiListCtrl_NextDayImgBtn')
         time.sleep(1)
         html = self.driver.page_source
@@ -131,6 +141,11 @@ class GroundNotifier(Scraper) :
       self.driver.quit()
       message += "https://www.task-asp.net/cu/ykr132241/app/ykr00000/ykr00001.aspx"
       print(message)
+      # メールを送信
+      msg = self.create_mail(TO_ADDRESS_2, '', SUBJECT, message)
+      self.send(TO_ADDRESS_2, msg)
+      msg = self.create_mail(TO_ADDRESS_1, '', SUBJECT, message)
+      self.send(TO_ADDRESS_1, msg)
 
 if __name__ == '__main__':
   notifier = GroundNotifier()
