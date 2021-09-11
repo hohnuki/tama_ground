@@ -4,6 +4,7 @@ from scraper import Scraper
 from selenium import webdriver # installしたseleniumからwebdriverを呼び出せるようにする
 from selenium.webdriver.common.keys import Keys # webdriverからスクレイピングで使用するキーを使えるようにする。
 
+
 class GroundNotifier(Scraper) :
 
     def __init__(self):
@@ -53,10 +54,10 @@ class GroundNotifier(Scraper) :
       soup = BeautifulSoup(html_main, 'lxml')
 
       for j in range(5):
-        table = soup.find_all(class_='calendar-datarow-day')[int(j)]
-        catch = table.find_all('td')
         col = []
         ava = []
+        table = soup.find_all(class_='calendar-datarow-day')[int(j)]
+        catch = table.find_all('td')
         count = 0
 
         for i in range(1,len(catch) ):
@@ -66,8 +67,8 @@ class GroundNotifier(Scraper) :
           count = 0
 
         for (a,c) in zip(ava,col):
-          #and j != 0 and j != 1
-          if (count >= 4 and count <= 26 and str(a) == "空き"):
+          #and j != 0 and j != 1をifの条件に追加で諏訪南、一本杉を消去する。
+          if (count >= 4 and count <= 26 and str(a) == "空き" and j != 0 and j != 1):
             message += str(self.park_name(j)) + "\n" + "   " + self.get_date(soup) + "  " + self.convert_count_to_time(count) + " 空きあり" + "\n\n"
           count += int(c)
       return (message)
@@ -92,6 +93,16 @@ class GroundNotifier(Scraper) :
       self.click('#WeeklyAkiListCtrl_DayTypeCheckBoxList_7')
       self.click('#WeeklyAkiListCtrl_FilteringButton')
 
+    def check_ava(self, html) :
+      soup = BeautifulSoup(html, 'lxml')
+      table_check = soup.find_all(class_='table-cell-datetime WidthPr7')[0]
+      table_check = table_check.find("a")
+
+      if (table_check == None):
+        return (1)
+      else:
+        return (0)
+
     def execute_main(self) :
       # TO_ADDRESS_1 = 'tk.cw.milds@gmail.com'
       # TO_ADDRESS_2 = 'ohnukihiroki8585@yahoo.co.jp'
@@ -101,10 +112,14 @@ class GroundNotifier(Scraper) :
 
       message = ""
       count = 0
+
+      html = self.driver.page_source
       while (count < 4):
         if count == 0:
-          self.click('#ykr31101 > div.panel-layout-aki.horizontal-block > div:nth-child(1) > table.table-calendar > tbody > tr:nth-child(1) > th:nth-child(2) > a')
-          # self.click('#ykr31101 > div.panel-layout-aki.horizontal-block > div:nth-child(1) > table.table-calendar > tbody > tr:nth-child(1) > th:nth-child(3) > a')
+          if self.check_ava(html) == 1:
+            self.click('#ykr31101 > div.panel-layout-aki.horizontal-block > div:nth-child(1) > table.table-calendar > tbody > tr:nth-child(1) > th:nth-child(3) > a')
+          else:
+            self.click('#ykr31101 > div.panel-layout-aki.horizontal-block > div:nth-child(1) > table.table-calendar > tbody > tr:nth-child(1) > th:nth-child(2) > a')
         else :
           self.click('#DailyAkiListCtrl_NextDayImgBtn')
         time.sleep(1)

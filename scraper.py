@@ -5,11 +5,12 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
 import time  # for sleep
 
-import os 
+import os
 import requests
 import smtplib
 from email.mime.text import MIMEText
 from email.utils import formatdate
+
 
 class Scraper :
 
@@ -18,7 +19,7 @@ class Scraper :
     self.my_password = 'ueknoiibsgcyfxpe'
 
     self.line_notify_token = os.environ.get('LINE_NOTIFY_TOKEN', 'xQfqD0GeVU9xvEwkJgls9sxvDBWoyd81SkxFl5MDoTP')
-    
+
     options = Options()
     options.add_argument('--disable-gpu');
     options.add_argument('--disable-extensions');
@@ -76,7 +77,7 @@ class Scraper :
           el = self.driver
       WebDriverWait(el, 15).until(
           EC.presence_of_element_located((By.CSS_SELECTOR, selector)))
-  
+
   def switch_to_window(self, window_order):
       allHandles = self.driver.window_handles
       self.driver.switch_to_window(allHandles[window_order])
