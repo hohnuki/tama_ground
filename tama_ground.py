@@ -13,21 +13,21 @@ class GroundNotifier(Scraper) :
     def convert_count_to_time(self, count) :
       ground_time = ""
       if (count == 4):
-        ground_time = "8:00~"
+        ground_time = "8:00~10:00"
       if (count == 8):
-        ground_time = "10:00~"
+        ground_time = "10:00~12:00"
       if (count == 12):
-        ground_time = "12:00~"
+        ground_time = "12:00~14:00"
       if (count == 16):
-        ground_time = "14:00~"
+        ground_time = "14:00~16:00"
       if (count == 20):
-        ground_time = "16:00~"
+        ground_time = "16:00~17:00"
       if (count == 22):
-        ground_time = "17:00~"
+        ground_time = "17:00~19:00"
       if (count == 24):
         ground_time = "18:00~"
       if (count == 26):
-        ground_time = "19:00~"
+        ground_time = "19:00~21:00"
       return (ground_time)
 
     def park_name(self, nb) :
@@ -142,10 +142,13 @@ class GroundNotifier(Scraper) :
       message += "https://www.task-asp.net/cu/ykr132241/app/ykr00000/ykr00001.aspx"
       print(message)
       # メールを送信
-      msg = self.create_mail(TO_ADDRESS_2, '', SUBJECT, message)
-      self.send(TO_ADDRESS_2, msg)
-      msg = self.create_mail(TO_ADDRESS_1, '', SUBJECT, message)
-      self.send(TO_ADDRESS_1, msg)
+      if message in "空きあり":
+        msg = self.create_mail(TO_ADDRESS_2, '', SUBJECT, message)
+        self.send(TO_ADDRESS_2, msg)
+        msg = self.create_mail(TO_ADDRESS_1, '', SUBJECT, message)
+        self.send(TO_ADDRESS_1, msg)
+      else:
+        print("空きなし")
 
 if __name__ == '__main__':
   notifier = GroundNotifier()
