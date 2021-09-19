@@ -68,7 +68,7 @@ class GroundNotifier(Scraper) :
 
         for (a,c) in zip(ava,col):
           #and j != 0 and j != 1をifの条件に追加で諏訪南、一本杉を消去する。
-          if (count >= 4 and count <= 26 and str(a) == "空き" and j != 0 and j != 1):
+          if (count >= 4 and count <= 16 and str(a) == "空き" and j != 0 and j != 1):
             message += str(self.park_name(j)) + "\n" + "   " + self.get_date(soup) + "  " + self.convert_count_to_time(count) + " 空きあり" + "\n\n"
           count += int(c)
       return (message)
@@ -113,6 +113,7 @@ class GroundNotifier(Scraper) :
     def execute_main(self) :
       TO_ADDRESS_1 = 'tk.cw.milds@gmail.com'
       TO_ADDRESS_2 = 'ohnukihiroki8585@yahoo.co.jp'
+      TO_ADDRESS_3 = 'tobitora5237@gmail.com'
       SUBJECT = "多摩の球場に空きがあります"
       message = ""
       count = 0
@@ -140,17 +141,19 @@ class GroundNotifier(Scraper) :
       # ブラウザを終了する
       self.driver.quit()
       message += "https://www.task-asp.net/cu/ykr132241/app/ykr00000/ykr00001.aspx"
-      print(message)
-      # メールを送信
-      if message in "空きあり":
-        msg = self.create_mail(TO_ADDRESS_2, '', SUBJECT, message)
-        self.send(TO_ADDRESS_2, msg)
+
+      if "空きあり" in message:
         msg = self.create_mail(TO_ADDRESS_1, '', SUBJECT, message)
         self.send(TO_ADDRESS_1, msg)
+        msg = self.create_mail(TO_ADDRESS_2, '', SUBJECT, message)
+        self.send(TO_ADDRESS_2, msg)
+        msg = self.create_mail(TO_ADDRESS_3, '', SUBJECT, message)
+        self.send(TO_ADDRESS_3, msg)
       else:
         print("空きなし")
+
+      print(message)
 
 if __name__ == '__main__':
   notifier = GroundNotifier()
   notifier.execute_main()
-
