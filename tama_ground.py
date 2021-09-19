@@ -45,31 +45,33 @@ class GroundNotifier(Scraper) :
       return (name)
 
     def get_date(self, soup) :
-      table_date = soup.find(class_='label-datechange-currentdate calendar-selected-date')
-      date = table_date.get_text().split('年')
+      header_date = soup.find(class_='label-datechange-currentdate calendar-selected-date')
+      date = header_date.get_text().split('年')
       return (date[1])
 
     def make_message(self, html_main) :
       message = ""
       soup = BeautifulSoup(html_main, 'lxml')
 
-      for j in range(5):
-        col = []
-        ava = []
-        table = soup.find_all(class_='calendar-datarow-day')[int(j)]
-        catch = table.find_all('td')
+      for park_index in range(5):
+        # col,avaは略さないでいい！
+        colspan = []
+        availability = []
+        target_table_row = soup.find_all(class_='calendar-datarow-day')[int(park_index)]
+        vacancy_candidates = target_table_row.find_all('td')
         count = 0
 
-        for i in range(1,len(catch) ):
-          catch = table.find_all('td')[int(i)]
-          col.append(int(catch["colspan"]))
-          ava.append(catch.get_text())
+        #0は球場名のtdなので最初から省いて1から始める
+        for i in range(1,len(vacancy_candidates) ):
+          vacancy_candidate = vacancy_candidates[int(i)]
+          colspan.append(int(vacancy_candidate["colspan"]))
+          availability.append(vacancy_candidate.get_text())
           count = 0
 
-        for (a,c) in zip(ava,col):
-          #and j != 0 and j != 1をifの条件に追加で諏訪南、一本杉を消去する。
-          if (count >= 4 and count <= 16 and str(a) == "空き" and j != 0 and j != 1):
-            message += str(self.park_name(j)) + "\n" + "   " + self.get_date(soup) + "  " + self.convert_count_to_time(count) + " 空きあり" + "\n\n"
+        for (a,c) in zip(availability,colspan):
+          #8時〜16時の空きの場合はメール送信対象とする。ただし、park_index = 0, 1は（諏訪南、一本杉）は除外する。
+          if (count >= 4 and count <= 16 and str(a) == "空き" and park_index != 0 and park_index != 1):
+            message += str(self.park_name(park_index)) + "\n" + "   " + self.get_date(soup) + "  " + self.convert_count_to_time(count) + " 空きあり" + "\n\n"
           count += int(c)
       return (message)
 
@@ -100,7 +102,8 @@ class GroundNotifier(Scraper) :
       # 絞り込みをクリックする
       self.click('#WeeklyAkiListCtrl_FilteringButton')
 
-    def check_ava(self, html) :
+    #名前が微妙、略さない。
+    def check_availabilty(self, html) :
       soup = BeautifulSoup(html, 'lxml')
       table_check = soup.find_all(class_='table-cell-datetime WidthPr7')[0]
       table_check = table_check.find("a")
@@ -122,11 +125,12 @@ class GroundNotifier(Scraper) :
       self.connect_tama()
 
       html = self.driver.page_source
+	  # week_countとかの方がいい。
       while (count < 4):
         if count == 0:
           # count == 1の時は全施設の1日表示の一番若い日付をクリックする。
           # check_avaで全施設の1日表示の一番若い日付をクリックできるか判断する。
-          if self.check_ava(html) == 1:
+          if self.check_availabilty(html) == 1:
             self.click('#ykr31101 > div.panel-layout-aki.horizontal-block > div:nth-child(1) > table.table-calendar > tbody > tr:nth-child(1) > th:nth-child(3) > a')
           else:
             self.click('#ykr31101 > div.panel-layout-aki.horizontal-block > div:nth-child(1) > table.table-calendar > tbody > tr:nth-child(1) > th:nth-child(2) > a')
@@ -154,6 +158,8 @@ class GroundNotifier(Scraper) :
 
       print(message)
 
+#TODO try-exceptでこけたときにメールを送れる様にする
+#TODO 命名規則の意識、自責他責
 if __name__ == '__main__':
   notifier = GroundNotifier()
   notifier.execute_main()
