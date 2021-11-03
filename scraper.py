@@ -3,14 +3,13 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
-import time  # for sleep
+from email.mime.text import MIMEText
+from email.utils import formatdate
 
 import os
 import requests
 import smtplib
-from email.mime.text import MIMEText
-from email.utils import formatdate
-
+import time  # for sleep
 
 class Scraper :
 

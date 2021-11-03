@@ -1,9 +1,9 @@
+# -*- coding: utf-8 -*-
 from bs4 import BeautifulSoup
 import time  # for sleep
 from scraper import Scraper
 from selenium import webdriver # installしたseleniumからwebdriverを呼び出せるようにする
 from selenium.webdriver.common.keys import Keys # webdriverからスクレイピングで使用するキーを使えるようにする。
-
 
 class GroundNotifier(Scraper) :
 
